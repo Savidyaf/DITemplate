@@ -1,7 +1,7 @@
 # DITemplate Work in progress
 Unity Dependency Injection Architecture Template 
 
-Made this boilerplate for my random hobby projects. I wii update the files here as my boilerplate as it evolves. 
+Made this boilerplate for my random hobby projects. I will update scripts here as it evolves. 
 
 Goal is to create an easy to iterate framework for quick prototyping with future compatibility for production for any game I want to make. 
 I write the code published to this repo first with each iteration and do a quick prototype with it to find the issues with my architecture.
