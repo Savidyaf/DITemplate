@@ -47,15 +47,15 @@ namespace MonsterFactory.Services.DataManagement
             return default;
         }
 
-        private void LoadDataFromCache()
+        private async void LoadDataFromCache()
         {
-            dataInstance = typeSerializedDBService.FetchReadOnlyDataFromDB<T>(dbFile, typeCode);
+            dataInstance = await typeSerializedDBService.FetchReadOnlyDataFromDB<T>(dbFile, typeCode);
         }
         
         
         public void Dispose()
         {
-            // TODO release managed resources here
+            eventDisposableBag?.Dispose();
         }
     }
 }
