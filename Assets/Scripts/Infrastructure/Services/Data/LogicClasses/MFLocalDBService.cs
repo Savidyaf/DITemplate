@@ -31,7 +31,7 @@ namespace MonsterFactory.Services.DataManagement
         public UniTask<bool> WriteDataToRuntimeDatabase<T>(string typeCode, CancellationToken cancellationToken, T dataInstance)
             where T : MFData;
 
-        public T FetchReadOnlyDataFromDB<T>(string dbName, string dataId) where T : MFData;
+        public UniTask<T> FetchReadOnlyDataFromDB<T>(string dbName, string dataId, bool loadToMemoryIfNotQueued = true) where T : MFData;
     }
 
     public class MFLocalDBService : IMFService, ITypeSerializedDBService
@@ -118,14 +118,16 @@ namespace MonsterFactory.Services.DataManagement
             }
         }
 
-        public T FetchReadOnlyDataFromDB<T>(string dbName, string dataId) where T : MFData
+        public async UniTask<T> FetchReadOnlyDataFromDB<T>(string dbName, string dataId, bool loadToMemoryIfNotQueued = true) where T : MFData
         {
-            if(readOnlyDbDataCache.TryGetValue(dbName, out MFReadOnlyBinaryDataQueue value))
+            if (!await readOnlyDbDataCache.TryQueue(dbName))
             {
-                if (value.TryDeque(dataId, out byte[] bytes))
-                {
-                    return bytes.ExtractDataObjectOfType<T>();
-                }
+                return null;
+            }
+            readOnlyDbDataCache.TryGetValue(dbName, out MFReadOnlyBinaryDataQueue value);
+            if (value != null && value.TryDeque(dataId, out byte[] bytes))
+            {
+                return bytes.ExtractDataObjectOfType<T>();
             }
             return null;
         }

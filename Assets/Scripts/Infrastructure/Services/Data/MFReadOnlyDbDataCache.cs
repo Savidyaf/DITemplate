@@ -7,28 +7,29 @@ namespace MonsterFactory.Services.DataManagement
 {
     public class MFReadOnlyDbDataCache : Dictionary<string, MFReadOnlyBinaryDataQueue>
     {
-        public async UniTask TryQueue(string dbFileName)
+        public async UniTask<bool> TryQueue(string dbFileName)
         {
             try
             {
                 if (ContainsKey(dbFileName))
                 {
-                    return;
+                    return true;
                 }
                 var conn = new MFSqlDBConnection(DataManagerDirectoryHelper.StreamingDataObjectPath(dbFileName));
                 await conn.Initialize();
                 var list = await conn.GetAllDataFromTable();
                 TryQueueData(dbFileName, list);
                 await conn.CloseDbConnection();
+                return true;
             }
             catch (Exception e)
             {
                 Debug.LogError(e);
-                throw;
+                return false;
             }
-            
         }
-        public void TryQueueData(string dbFileName, List<DataChunkMap> rawData)
+
+        private void TryQueueData(string dbFileName, List<DataChunkMap> rawData)
         {
             MFReadOnlyBinaryDataQueue dataQueue = new MFReadOnlyBinaryDataQueue();
             
