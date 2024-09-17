@@ -25,7 +25,7 @@ Async wrapper : https://github.com/Cysharp/UniTask
 Event Framework : https://github.com/Cysharp/MessagePipe
 
 
-# What is Working
+# What is included
 
 #Architecture 
 
@@ -34,7 +34,14 @@ Event Framework : https://github.com/Cysharp/MessagePipe
 
 
 ## Data System
-- Data system phase 1 was to use a SQL db to store serialized data. I'm not taking full advantage of having a DB in this version but good example for what I want to use it for. 
+## Features
+  ### Read Only Data - Once data is loaded, DI system will resolve the same instance accross the application.
+  - Converts DB objects into a DataId : Data Blob dictionary that get's dequeued as data objects are used. I'm depending on the user class to determine if the data should return to the queue or not.
+  ### Runtime Data Loading/Saving
+  - Any runtime modified object will impement C#'s INotifyPropertyChanged. Usually used for UI bindings to mark the modified state of the object. There's Load / Save events that can be triggerd within scope or for the game lifetime scope to load/save data.
+  - Data providers covert the type of the data object into a 64 digit string and use that as the mapping to load data blobs from the db.
+  - There are additional benifits to this, DB can be encrypted if needed.
+
 
 ## In Progress 
 - Examples for all data system use cases
