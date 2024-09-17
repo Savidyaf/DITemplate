@@ -1,4 +1,4 @@
-# DITemplate Work in progress
+# Unity Dependency Injected Data Architecture
 Unity Dependency Injection Architecture Template 
 
 Made this boilerplate for my random hobby projects. I will update scripts here as it evolves. 
