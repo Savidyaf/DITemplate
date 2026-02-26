@@ -2,48 +2,56 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace MonsterFactory.Services.DataManagement
+namespace SpiralingStudio.Services.DataManagement
 {
     public static class DataProviderTypeResolver
     {
-        private static SHA256Managed _sha256Managed;
 
         /// <summary>
         /// Resolve the MFDataObject attribute related data
         /// Sets the save and load flags if attribute is found.
         /// Generates a UID
         /// </summary>
-        /// <param name="autoLoad"> ref AutoLoad : Sets Autoload flag</param>
-        /// <param name="autoSave">ref AutoSave : Sets Autosave flag</param>
+        /// <param name="autoLoad"> out AutoLoad : Sets Autoload flag</param>
+        /// <param name="autoSave">out AutoSave : Sets Autosave flag</param>
         /// <param name="typeCode"></param>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static MFDataObject ResolveTypeInfo<T>(ref string typeCode,ref bool autoLoad, ref bool autoSave)
+        public static MFDataObject ResolveTypeInfo<T>(out string typeCode, out bool autoLoad, out bool autoSave)
         {
+            autoLoad = default;
+            autoSave = default;
+
             MFDataObject dataObject = MFDataSerializerExtensions.GetDataAttribute<T>(out string name);
-            string uid = null;
+            string seed = dataObject?.UniqueId ?? name ?? typeof(T).FullName;
             if (dataObject != null)
             {
-                uid = dataObject.UniqueId;
                 autoLoad = dataObject.AutoFetch;
                 autoSave = dataObject.AutoSave;
             }
-            GenerateUidFromDataType( string.IsNullOrEmpty(uid)? name : uid, out typeCode);
+
+            typeCode = ComputeTypeCode(seed);
             return dataObject;
         }
         
-        public static MFDataObject ResolveTypeInfo<T>(ref string typeCode, ref bool autoLoad)
+        public static MFDataObject ResolveTypeInfo<T>(out string typeCode, out bool autoLoad)
         {
-            bool autoSave = default; 
-            return ResolveTypeInfo<T>(ref typeCode, ref autoLoad, ref autoSave);
+            bool autoSave;
+            var result = ResolveTypeInfo<T>(out typeCode, out autoLoad, out autoSave);
+            return result;
         }
 
-        private static void GenerateUidFromDataType(string uniqueId, out string typeCode)
+        private static string ComputeTypeCode(string uniqueId)
         {
-            _sha256Managed ??= new SHA256Managed();
-            byte[] hashedBytes = _sha256Managed.ComputeHash(Encoding.UTF8.GetBytes(uniqueId));
-            string hashedString = Convert.ToBase64String(hashedBytes);
-            typeCode = hashedString.Length > 64 ? hashedString.Substring(0, 64) : hashedString;
+            using var sha = SHA256.Create();
+            byte[] hashedBytes = sha.ComputeHash(Encoding.UTF8.GetBytes(uniqueId));
+            // Hex string is 64 chars for SHA-256
+            var sb = new StringBuilder(hashedBytes.Length * 2);
+            for (int i = 0; i < hashedBytes.Length; i++)
+            {
+                sb.Append(hashedBytes[i].ToString("X2"));
+            }
+            return sb.ToString();
         }
     }
 }

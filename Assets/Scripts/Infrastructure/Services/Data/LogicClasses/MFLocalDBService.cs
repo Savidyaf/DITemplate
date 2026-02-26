@@ -1,154 +1,270 @@
-using System;
+﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using VContainer;
 
 
-namespace MonsterFactory.Services.DataManagement
+namespace SpiralingStudio.Services.DataManagement
 {
-    public interface ITypeSerializedDBService
+   public class MFLocalDBService : IMFService, ITypeSerializedDBService, IAsyncDisposable
     {
-        /// <summary>
-        /// Fetches data of type T from the runtime database.
-        /// </summary>
-        /// <param name="typeCode">The code identifying the type of data.</param>
-        /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <typeparam name="T">The type of data to fetch.</typeparam>
-        /// <returns>A UniTask representing the asynchronous operation.</returns>
-        public UniTask<T> FetchDataFromRuntimeDatabase<T>(string typeCode, CancellationToken cancellationToken) where T : MFData;
-
-        /// <summary>
-        /// Writes data of type T to the runtime database.
-        /// </summary>
-        /// <typeparam name="T">The type of data to write.</typeparam>
-        /// <param name="typeCode">The code identifying the type of data.</param>
-        /// <param name="cancellationToken">A token to cancel the operation.</param>
-        /// <param name="dataInstance">The instance of data to write.</param>
-        /// <returns>True : If write operation succeeded, False : Write operation failed </returns>
-        public UniTask<bool> WriteDataToRuntimeDatabase<T>(string typeCode, CancellationToken cancellationToken, T dataInstance)
-            where T : MFData;
-
-        public UniTask<T> FetchReadOnlyDataFromDB<T>(string dbName, string dataId, bool loadToMemoryIfNotQueued = true) where T : MFData;
-    }
-
-    public class MFLocalDBService : IMFService, ITypeSerializedDBService
-    {
-        private IMFSerializedDBConnection readWriteDBConnection;
-        private MFReadOnlyDbDataCache readOnlyDbDataCache;
-        private const string AutoLoadDbname =  "AutoLoadDb";
+        private const string DBPathExtension = "SaveGameDB";
         
-        #region Init
+        private IMFSerializedDBConnection runtimeDbConnection;
+        private bool initialized;
+        private string runtimeDbPath;
+        private int? currentSlotIndex;
+        private readonly object _dbLock = new object();
+
+        /// <summary>
+        /// Gets the currently active slot index, or null if no slot is active.
+        /// </summary>
+        public int? CurrentSlotIndex
+        {
+            get
+            {
+                lock (_dbLock)
+                {
+                    return currentSlotIndex;
+                }
+            }
+        }
 
         [Inject]
         public MFLocalDBService()
         {
+            // Constructor
         }
-        
+
+        // This method is from IMFService.
+        // We'll provide an array of tasks for any needed initialization.
         public UniTask[] GetInitializeTasks()
         {
+            // For multi-slot save system, we don't auto-initialize a database
+            // Database will be initialized when a slot is selected via SwitchToSlotDatabase
             return new[]
             {
-                //InitializeReadOnlyDataSystems(),
-                InitializeRuntimeDataSystems()
+                InitializeServiceOnly()
             };
         }
 
-        private UniTask InitializeRuntimeDataSystems()
+        private UniTask InitializeServiceOnly()
         {
-            readWriteDBConnection = new MFSqlDBConnection(DataManagerDirectoryHelper.DBFilePathForUserId("TestUser"));
-            return readWriteDBConnection.Initialize();
-        }
-        
-        private async UniTask InitializeReadOnlyDataSystems()
-        {
-            readOnlyDbDataCache = new MFReadOnlyDbDataCache();
-            await readOnlyDbDataCache.TryQueue(AutoLoadDbname);
+            // Mark service as initialized but don't connect to any database yet
+            initialized = true;
+            Debug.Log("[MFLocalDBService] Service initialized. No database connected yet. Call SwitchToSlotDatabase to load a save slot.");
+            return UniTask.CompletedTask;
         }
 
-        #endregion
-
-        #region API
-        
-        public UniTask<T> FetchDataFromRuntimeDatabase<T>(string typeCode, CancellationToken cancellationToken) where T : MFData
+        /// <summary>
+        /// Switches the active database connection to a specific save slot.
+        /// Closes the current connection if one exists.
+        /// </summary>
+        /// <param name="slotIndex">Slot index to switch to (-1 for auto-save, 0+ for manual slots)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        public async UniTask SwitchToSlotDatabase(int slotIndex, CancellationToken cancellationToken = default)
         {
-            return FetchDataFromDb<T>(typeCode, cancellationToken, readWriteDBConnection);
-        }
+            if (!initialized)
+            {
+                throw new InvalidOperationException("[MFLocalDBService] Service not initialized. Call GetInitializeTasks and await them first.");
+            }
 
-        private async UniTask<T> FetchDataFromDb<T>(string typeCode, CancellationToken cancellationToken, IMFSerializedDBConnection dbConnection)
-            where T : MFData
-        {
             try
             {
-                DataChunkMap dataChunkMap = await dbConnection.GetChunkUniqueDataFromKey(typeCode)
-                    .AttachExternalCancellation(cancellationToken);
-                if (dataChunkMap != null)
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // Close current connection if exists
+                await CloseCurrentDatabase();
+
+                // Get path for the new slot
+                runtimeDbPath = DataManagerDirectoryHelper.GetSlotDatabasePath(slotIndex);
+                Debug.Log($"[MFLocalDBService] Switching to slot {slotIndex} database at: {runtimeDbPath}");
+
+                // Initialize new connection
+                lock (_dbLock)
                 {
-                    return await TryProcessDataChunk<T>(typeCode).AttachExternalCancellation(cancellationToken);
+                    runtimeDbConnection = new MFSqlDBConnection(runtimeDbPath);
+                    currentSlotIndex = slotIndex;
+                }
+
+                await runtimeDbConnection.Initialize();
+
+                Debug.Log($"[MFLocalDBService] Successfully switched to slot {slotIndex}.");
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogWarning($"[MFLocalDBService] Slot switch to {slotIndex} was cancelled.");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[MFLocalDBService] Failed to switch to slot {slotIndex}: {ex}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Closes the current database connection without switching to a new one.
+        /// </summary>
+        public async UniTask CloseCurrentDatabase()
+        {
+            IMFSerializedDBConnection connectionToClose = null;
+
+            lock (_dbLock)
+            {
+                if (runtimeDbConnection != null)
+                {
+                    connectionToClose = runtimeDbConnection;
+                    runtimeDbConnection = null;
+                    currentSlotIndex = null;
                 }
             }
-            catch (Exception e)
-            {
-                Debug.LogError($"DB Fetch {typeCode} Unknown Error : {e}");
-                return null;
-            }
 
-            return null;
+            if (connectionToClose != null)
+            {
+                try
+                {
+                    Debug.Log("[MFLocalDBService] Closing current database connection...");
+                    await connectionToClose.CloseDbConnection();
+                    Debug.Log("[MFLocalDBService] Database connection closed.");
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[MFLocalDBService] Error closing database connection: {ex}");
+                    throw;
+                }
+            }
         }
 
-        public async UniTask<bool> WriteDataToRuntimeDatabase<T>(string typeCode, CancellationToken cancellationToken,
-            T dataInstance) where T : MFData
+        // Implementation of ITypeSerializedDBService:
+        public async UniTask<T> FetchDataFromRuntimeDatabase<T>(
+            string typeCode,
+            CancellationToken cancellationToken)
+            where T : MFSaveData
+        {
+            if (!initialized)
+            {
+                throw new InvalidOperationException("[MFLocalDBService] Service not initialized. Call GetInitializeTasks and await them first.");
+            }
+
+            lock (_dbLock)
+            {
+                if (runtimeDbConnection == null)
+                {
+                    throw new InvalidOperationException("[MFLocalDBService] No database connection active. Call SwitchToSlotDatabase to load a save slot first.");
+                }
+            }
+
+            if (string.IsNullOrEmpty(typeCode))
+            {
+                throw new ArgumentException("Type code cannot be null or empty.", nameof(typeCode));
+            }
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                
+                DataChunkMap chunk = await runtimeDbConnection.GetDataChunkById(typeCode);
+                if (chunk == null || chunk.DataBlob == null || chunk.DataBlob.Length == 0)
+                {
+                    Debug.Log($"[MFLocalDBService] No data found for typeCode '{typeCode}'.");
+                    return null; 
+                }
+
+                MFSaveData deserialized = chunk.ExtractDataObjectOfType();
+                return (T)deserialized;
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogWarning($"[MFLocalDBService] Fetch operation cancelled for typeCode '{typeCode}'.");
+                throw;
+            }
+            catch (InvalidCastException ex)
+            {
+                Debug.LogError($"[MFLocalDBService] Type mismatch when fetching data for typeCode '{typeCode}': {ex.Message}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[MFLocalDBService] Failed to fetch data for typeCode '{typeCode}': {ex}");
+                return null;
+            }
+        }
+
+        public async UniTask<bool> WriteDataToRuntimeDatabase<T>(
+            string typeCode,
+            CancellationToken cancellationToken,
+            T dataInstance) where T : MFSaveData
+        {
+            if (!initialized)
+            {
+                throw new InvalidOperationException("[MFLocalDBService] Service not initialized. Call GetInitializeTasks and await them first.");
+            }
+
+            lock (_dbLock)
+            {
+                if (runtimeDbConnection == null)
+                {
+                    throw new InvalidOperationException("[MFLocalDBService] No database connection active. Call SwitchToSlotDatabase to load a save slot first.");
+                }
+            }
+
+            if (string.IsNullOrEmpty(typeCode))
+            {
+                throw new ArgumentException("Type code cannot be null or empty.", nameof(typeCode));
+            }
+
+            if (dataInstance == null)
+            {
+                Debug.LogWarning($"[MFLocalDBService] WriteDataToRuntimeDatabase called with null dataInstance for '{typeCode}'");
+                return false;
+            }
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                
+                byte[] bytes = dataInstance.SerializeDataToBytes();
+                if (bytes == null || bytes.Length == 0)
+                {
+                    Debug.LogWarning($"[MFLocalDBService] Serialization produced empty data for typeCode '{typeCode}'.");
+                    return false;
+                }
+                
+                await runtimeDbConnection.WriteSingleDataChunkToId(typeCode, bytes);
+                Debug.Log($"[MFLocalDBService] Successfully wrote {bytes.Length} bytes for typeCode '{typeCode}'.");
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogWarning($"[MFLocalDBService] Write operation cancelled for typeCode '{typeCode}'.");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[MFLocalDBService] Failed to write data for typeCode '{typeCode}': {ex}");
+                return false;
+            }
+        }
+
+        public async ValueTask DisposeAsync()
         {
             try
             {
-                return await readWriteDBConnection.WriteSingleDataChunkToId(typeCode, dataInstance?.SerializeDataToBytes())
-                    .AttachExternalCancellation(cancellationToken) > 0;
+                await CloseCurrentDatabase();
             }
-            catch (OperationCanceledException e)
+            catch (Exception ex)
             {
-                Debug.LogWarning($"DB Write {typeCode} Operation Cancelled : {e}");
-                return false;
+                Debug.LogError($"[MFLocalDBService] Error during disposal: {ex}");
             }
-            catch (Exception e)
+            finally
             {
-                Debug.LogError($"DB Write {typeCode} Unknown Error : {e}");
-                return false;
+                initialized = false;
             }
         }
-
-        public async UniTask<T> FetchReadOnlyDataFromDB<T>(string dbName, string dataId, bool loadToMemoryIfNotQueued = true) where T : MFData
-        {
-            if (!await readOnlyDbDataCache.TryQueue(dbName))
-            {
-                return null;
-            }
-            readOnlyDbDataCache.TryGetValue(dbName, out MFReadOnlyBinaryDataQueue value);
-            if (value != null && value.TryDeque(dataId, out byte[] bytes))
-            {
-                return bytes.ExtractDataObjectOfType<T>();
-            }
-            return null;
-        }
-
-        #endregion
-
-
-        #region Implementation
-
-        private async UniTask<T> TryProcessDataChunk<T>(string typeCode) where T : MFData
-        {
-            DataChunkMap dataChunk = await readWriteDBConnection.GetDataChunkById(typeCode);
-            MFData var = dataChunk.ExtractDataObjectOfType();
-            if (var is T data)
-            {
-                return data;
-            }
-
-            return null;
-        }
-
-        #endregion
     }
+
 }

@@ -1,7 +1,8 @@
 ﻿using SQLite;
 
-namespace MonsterFactory.Services.DataManagement
+namespace SpiralingStudio.Services.DataManagement
 {
+    [Table("DataChunkMap")]
     public class DataChunkMap
     {
         [PrimaryKey, Unique, MaxLength(64)] public string Id { get; set; }

@@ -1,0 +1,20 @@
+Key,Description,English
+task_tutorial_title,Tutorial task title,Learn the Basics
+task_tutorial_desc,Tutorial task description,Complete these steps to learn how to play.
+task_sub_find_supplies,Tutorial sub-task - find supplies,Find supplies ({0}/{1})
+task_sub_pickup_alarm,Tutorial sub-task - pickup alarm,Pick up the alarm clock
+task_sub_drive_1km,Tutorial sub-task - drive distance,Drive 1km distance ({0}m/{1}m)
+task_hud_title,Task HUD title,Current Tasks
+task_hud_no_active,No active tasks message,No active tasks
+task_state_locked,Task state - Locked,Locked
+task_state_available,Task state - Available,Available
+task_state_active,Task state - Active,Active
+task_state_completed,Task state - Completed,Completed
+task_state_failed,Task state - Failed,Failed
+task_state_abandoned,Task state - Abandoned,Abandoned
+task_type_main,Task type - Main,Main
+task_type_side,Task type - Side,Side
+task_type_tutorial,Task type - Tutorial,Tutorial
+task_type_hidden,Task type - Hidden,Hidden
+task_details_expand,Expand task details,Press Tab to expand
+task_details_collapse,Collapse task details,Press Tab to collapse

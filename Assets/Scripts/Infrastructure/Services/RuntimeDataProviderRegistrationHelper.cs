@@ -1,7 +1,7 @@
-﻿using MonsterFactory.Services.DataManagement;
+﻿using SpiralingStudio.Services.DataManagement;
 using VContainer;
 
-namespace MonsterFactory.Services
+namespace SpiralingStudio.Services
 {
     public static class RuntimeDataProviderRegistrationHelper
     {
@@ -12,7 +12,7 @@ namespace MonsterFactory.Services
         public static void RegisterDataProviders(IContainerBuilder containerBuilder)
         {
             containerBuilder.Register(typeof(MFLocallyStoredDataInstanceProvider<>), Lifetime.Singleton);
-            containerBuilder.Register(typeof(MFSerializedReadOnlyDataInstanceProvider<>), Lifetime.Singleton);
+            containerBuilder.Register<IDbLoaderFactory, DbLoaderFactory>(Lifetime.Singleton);
         }
     }
 }

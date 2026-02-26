@@ -1,21 +1,30 @@
-using MessagePipe;
+﻿using MessagePipe;
 using VContainer;
 
-namespace MonsterFactory.Events
+namespace SpiralingStudio.Events
 {
     public static partial class EventRegistrationHelper
     {
         private static IContainerBuilder builder;
         private static MessagePipeOptions options;
-        
-        private static void RegisterEvent<TtypedEvent>() where TtypedEvent : MFBaseEvent
+
+        private static MessagePipeOptions _scopedOptions = new MessagePipeOptions
+        {
+            DefaultAsyncPublishStrategy = AsyncPublishStrategy.Parallel,
+            EnableCaptureStackTrace = false,
+            HandlingSubscribeDisposedPolicy = HandlingSubscribeDisposedPolicy.Ignore,
+            InstanceLifetime = InstanceLifetime.Scoped,
+            RequestHandlerLifetime = InstanceLifetime.Scoped
+        };
+
+        private static void RegisterGlobalEvent<TtypedEvent>() where TtypedEvent : MFBaseEvent
         {
             builder.RegisterMessageBroker<TtypedEvent>(options);
         }
 
-        private static void RegisterScopedEvent<TtypedEvent>(IContainerBuilder builderLifetime,MessagePipeOptions options) where TtypedEvent : MFBaseEvent
+        public static void RegisterScopedEvent<TtypedEvent>(this IContainerBuilder builderLifetime) where TtypedEvent : MFBaseEvent
         {
-            builderLifetime.RegisterMessageBroker<TtypedEvent>(EventRegistrationHelper.options);
+            builderLifetime.RegisterMessageBroker<TtypedEvent>(_scopedOptions);
         }
     }
 

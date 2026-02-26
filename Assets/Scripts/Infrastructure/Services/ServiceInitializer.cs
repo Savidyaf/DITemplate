@@ -1,41 +1,62 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Cysharp.Threading.Tasks;
-using Infrastructure.Systems;
+using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-namespace MonsterFactory.Services
+namespace SpiralingStudio.Services
 {
-    public class ServiceInitializer : IInitializable
+    public class ServiceInitializer : IAsyncStartable
     {
-        private readonly List<Type> lifetimeScope;
-        private readonly IObjectResolver objectResolver;
+        private readonly IReadOnlyList<IMFService> mfServices;
 
         [Inject]
-        public ServiceInitializer(GameLifetimeScope lifetimeScope, IObjectResolver objectResolver)
+        public ServiceInitializer(IEnumerable<IMFService> mfServices)
         {
-            this.lifetimeScope = lifetimeScope.LifetimeServices;
-            this.objectResolver = objectResolver;
+            this.mfServices = mfServices?.ToArray() ?? Array.Empty<IMFService>();
         }
-        
-        public List<UniTask> GetInitializationTasks()
+
+        private List<UniTask> GetInitializationTasks()
         {
-            List<UniTask> initializationTasks = new List<UniTask>();
-            foreach (Type type in lifetimeScope)
+            var initializationTasks = new List<UniTask>(capacity: mfServices.Count);
+            for (int i = 0; i < mfServices.Count; i++)
             {
-                object instance = objectResolver.Resolve(type);
-                if (instance is IMFService mfService)
-                {
-                    initializationTasks.AddRange(mfService.GetInitializeTasks());
-                }
+                IMFService mfService = mfServices[i];
+                var tasks = mfService?.GetInitializeTasks();
+                if (tasks == null || tasks.Length == 0) continue;
+                initializationTasks.AddRange(tasks);
             }
             return initializationTasks;
         }
 
-        public async void Initialize()
+        public async UniTask StartAsync(CancellationToken cancellation = default)
         {
-            await UniTask.WhenAll(GetInitializationTasks());
+            try
+            {
+                var tasks = GetInitializationTasks();
+                if (tasks.Count == 0)
+                {
+                    Debug.Log("[ServiceInitializer] No initialization tasks to execute.");
+                    return;
+                }
+
+                Debug.Log($"[ServiceInitializer] Starting initialization of {tasks.Count} tasks...");
+                await UniTask.WhenAll(tasks).AttachExternalCancellation(cancellation);
+                Debug.Log("[ServiceInitializer] All services initialized successfully.");
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogWarning("[ServiceInitializer] Service initialization was cancelled.");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[ServiceInitializer] Service initialization failed: {ex}");
+                throw;
+            }
         }
     }
 }

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f8c9e1a2b3d4e5f6a7b8c9d0e1f2a3b, type: 3}
+  m_Name: LocalizationConfiguration
+  m_EditorClassIdentifier: 
+  defaultFallbackLanguage: English
+  supportedLanguages:
+  - languageName: English
+    languageCode: en
+    isRightToLeft: 0
+  - languageName: Spanish
+    languageCode: es
+    isRightToLeft: 0
+  - languageName: French
+    languageCode: fr
+    isRightToLeft: 0
+  contentFiles:
+  - Common
+  - Narration
+  - UI
+  preloadAllLanguages: 0
+  useDeviceLocale: 1
+  showMissingTranslationWarnings: 1
+  logKeyLookups: 0
+  showKeysInsteadOfTranslations: 0
+  missingKeyPrefix: '[MISSING] '
+  useFallbackForMissingTranslations: 1
+  maxFallbackDepth: 3

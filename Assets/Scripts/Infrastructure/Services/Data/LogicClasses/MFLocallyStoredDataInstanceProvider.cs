@@ -3,12 +3,12 @@ using System.ComponentModel;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using MessagePipe;
-using MonsterFactory.Events;
+using SpiralingStudio.Events;
 using VContainer;
 
-namespace MonsterFactory.Services.DataManagement
+namespace SpiralingStudio.Services.DataManagement
 {
-    public class MFLocallyStoredDataInstanceProvider<T> : IDisposable where T : MFData, new()
+    public class MFLocallyStoredDataInstanceProvider<T> : IDisposable where T : MFSaveData, new()
     {
         private readonly ITypeSerializedDBService dbService;
         private readonly IDisposable eventDisposableBag;
@@ -28,8 +28,11 @@ namespace MonsterFactory.Services.DataManagement
             IAsyncSubscriber<DataEventLoadData> loadDataSubscriber,
             IAsyncSubscriber<DataEventSaveData> saveDataSubscriber)
         {
-            MFDataObject dataObject = DataProviderTypeResolver.ResolveTypeInfo<T>(ref typeCode,
-                ref subscribeToAutoLoadEvent, ref subscribeToAutoSaveEvent);
+            MFDataObject dataObject = DataProviderTypeResolver.ResolveTypeInfo<T>(out var localTypeCode,
+                out var autoLoad, out var autoSave);
+            typeCode = localTypeCode;
+            subscribeToAutoLoadEvent = autoLoad;
+            subscribeToAutoSaveEvent = autoSave;
             if (dataObject == null)
             {
                 //It's possible to use MFLocallyStoredDataInstanceProvider to create and manage data instances across scope without using DB.

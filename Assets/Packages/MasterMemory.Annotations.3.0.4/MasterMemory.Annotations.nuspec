@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>MasterMemory.Annotations</id>
+    <version>3.0.4</version>
+    <authors>Cysharp</authors>
+    <projectUrl>https://github.com/Cysharp/MasterMemory</projectUrl>
+    <description>Attributes of MasterMemory.</description>
+    <copyright>Cysharp</copyright>
+    <tags>database, embedded, inmemory, unity</tags>
+    <repository type="git" url="https://github.com/Cysharp/MasterMemory" commit="7b7a65da66749e3d49dabed7e087448bb19af549" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
+  </metadata>
+</package>
