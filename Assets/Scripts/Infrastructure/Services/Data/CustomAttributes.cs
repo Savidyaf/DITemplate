@@ -1,4 +1,4 @@
-﻿namespace MonsterFactory.Services.DataManagement
+﻿namespace SpiralingStudio.Services.DataManagement
 {
     [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Struct)]
     public class MFDataObject : System.Attribute
@@ -30,13 +30,5 @@
             DBObjectName = dBObjectName;
         }
         public string DBObjectName { get; }
-    }
-    [System.AttributeUsage(System.AttributeTargets.Class | System.AttributeTargets.Struct)]
-    public class AutoLoadDbObjects : ReadOnlyDBObject
-    {
-        private const string DBFileName = "AutoLoadDataMap";
-        public AutoLoadDbObjects(string uniqueId) : base(uniqueId, DBFileName, true)
-        {
-        }
     }
 }

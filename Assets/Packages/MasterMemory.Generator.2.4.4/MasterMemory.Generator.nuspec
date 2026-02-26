@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>MasterMemory.Generator</id>
+    <version>2.4.4</version>
+    <authors>Cysharp</authors>
+    <projectUrl>https://github.com/Cysharp/MasterMemory</projectUrl>
+    <description>Code Generator of MasterMemory.</description>
+    <copyright>Cysharp</copyright>
+    <tags>database, embedded, inmemory, unity</tags>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+    <repository type="git" url="https://github.com/Cysharp/MasterMemory" />
+  </metadata>
+</package>

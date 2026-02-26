@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_GUID: 43806e1ce97e27042af1af7983c74f63
+  m_SerializeEntries:
+  - m_GUID: 0abb47a9408eddb42b9188272f9e1f30
+    m_Address: SQ01S001
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NarrativeSequence
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1aa1c2ef9c7520e48a702a6c112b602b
+    m_Address: Assets/Content/Emails/emails.csv
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Email
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 35a9eeb4f76c6e845805119f5399d409
+    m_Address: MainMenu
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Scene
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 61439d80877c5a9438928057721a10aa
+    m_Address: test_sequence_001
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - NarrativeSequence
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 75a5ba53cc605cd40ac404db9afd83e3
+    m_Address: GameInitializationScreen
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Scene
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8f3b0bdfad04cca42950a5b8f9d843e0
+    m_Address: WorldScene
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Scene
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b1b416d66e60b3d4db2ad9d4e9697b5e
+    m_Address: DevTestScene
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Scene
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ccb3b340213c413469a9ee82f23e70cd
+    m_Address: Content/Emails/chapter_01
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Email
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e6c46ee6e50e4484998bd77af1dbac85
+    m_Address: LoadingScreen
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Scene
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f4b8de8addb539d4db501308e5c57e3e
+    m_Address: BaseUIScene
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Scene
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 227a438d6c669544da0aa8318ac831d5, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 29ce66ef8d6f4cd4683cefe70fdfb7cd, type: 2}
+    - {fileID: 11400000, guid: 307085f3f5a1d524a8140a3113caf917, type: 2}

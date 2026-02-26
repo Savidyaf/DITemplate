@@ -1,0 +1,33 @@
+Key,en,es,fr
+ui_menu_main_title,Main Menu,Menú Principal,Menu Principal
+ui_menu_settings,Settings,Configuración,Paramètres
+ui_menu_options,Options,Opciones,Options
+ui_menu_language,Language,Idioma,Langue
+ui_menu_audio,Audio,Audio,Audio
+ui_menu_video,Video,Vídeo,Vidéo
+ui_menu_controls,Controls,Controles,Contrôles
+ui_settings_volume,Volume,Volumen,Volume
+ui_settings_music,Music,Música,Musique
+ui_settings_sound_effects,Sound Effects,Efectos de Sonido,Effets Sonores
+ui_settings_brightness,Brightness,Brillo,Luminosité
+ui_settings_fullscreen,Fullscreen,Pantalla Completa,Plein Écran
+ui_hud_health,Health,Salud,Santé
+ui_hud_score,Score: {0},Puntuación: {0},Score: {0}
+ui_hud_level,Level {0},Nivel {0},Niveau {0}
+ui_loading_text_loading,Loading...,Cargando...,Chargement...
+ui_init_step_loadprefs,Loading Preferences...,Cargando Preferencias...,Chargement des Préférences...
+ui_init_step_applyprefs,Applying Preferences...,Aplicando Preferencias...,Application des Préférences...
+ui_init_step_loadassets,Loading Assets...,Cargando Recursos...,Chargement des Ressources...
+ui_init_step_loadmenu,Loading Main Menu...,Cargando Menú Principal...,Chargement du Menu Principal...
+ui_mainmenu_button_newgame,New Game,Nuevo Juego,Nouveau Jeu
+ui_mainmenu_button_loadgame,Load Game,Cargar Juego,Charger Jeu
+ui_mainmenu_button_settings,Settings,Configuración,Paramètres
+ui_mainmenu_button_exit,Exit,Salir,Quitter
+ui_saveslot_text_lastplayed,Last Played: {0},Última Partida: {0},Dernière Partie: {0}
+ui_saveslot_text_playtime,Playtime: {0}h,Tiempo: {0}h,Temps: {0}h
+ui_saveslot_button_select,Select,Seleccionar,Sélectionner
+ui_saveslot_button_delete,Delete,Eliminar,Supprimer
+ui_saveslot_text_empty,Empty Slot,Ranura Vacía,Emplacement Vide
+ui_saveslot_text_nosaves,No save games found.,No se encontraron partidas guardadas.,Aucune sauvegarde trouvée.
+
+

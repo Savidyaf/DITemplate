@@ -3,7 +3,7 @@ using SQLite;
 using Cysharp.Threading.Tasks;
 
 
-namespace MonsterFactory.Services.DataManagement
+namespace SpiralingStudio.Services.DataManagement
 {
     public interface IMFSerializedDBConnection
     {
@@ -44,18 +44,33 @@ namespace MonsterFactory.Services.DataManagement
 
         public async UniTask<DataChunkMap> GetDataChunkById(string dataChunkId)
         {
-            return await dbConnection.GetAsync<DataChunkMap>(dataChunkId);
+            try
+            {
+                return await dbConnection.GetAsync<DataChunkMap>(dataChunkId);
+            }
+            catch
+            {
+                // not found
+                return null;
+            }
         }
 
         public UniTask<int> WriteSingleDataChunkToId(string typeCode, byte[] dataBlob)
         {
-            return dbConnection.InsertOrReplaceAsync(new DataChunkMap() { DataBlob = dataBlob, Id = typeCode },
-                typeof(DataChunkMap));
+            return dbConnection.InsertOrReplaceAsync(new DataChunkMap() { DataBlob = dataBlob, Id = typeCode }, typeof(DataChunkMap)).AsUniTask();
         }
 
         public async UniTask<DataChunkMap> GetChunkUniqueDataFromKey(string key)
         {
-            return await dbConnection.GetAsync<DataChunkMap>(key);
+            try
+            {
+                return await dbConnection.GetAsync<DataChunkMap>(key);
+            }
+            catch
+            {
+                // not found
+                return null;
+            }
         }
 
         public async UniTask<List<DataChunkMap>> GetAllDataFromTable()
@@ -65,17 +80,17 @@ namespace MonsterFactory.Services.DataManagement
 
         public UniTask<int> AddNewDataInstance(DataChunkMap data)
         {
-            return dbConnection.InsertAsync(data, typeof(DataChunkMap));
+            return dbConnection.InsertAsync(data, typeof(DataChunkMap)).AsUniTask();
         }
 
         public UniTask CloseDbConnection()
         {
-            return dbConnection?.CloseAsync() ?? default;
+            return dbConnection != null ? dbConnection.CloseAsync().AsUniTask() : default;
         }
         
         private UniTask CreateDataChunkTable()
         {
-            return dbConnection.CreateTablesAsync(CreateFlags.None, typeof(DataChunkMap));
+            return dbConnection.CreateTablesAsync(CreateFlags.None, typeof(DataChunkMap)).AsUniTask();
         }
     }
 }

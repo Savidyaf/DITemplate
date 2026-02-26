@@ -1,0 +1,23 @@
+Key,en,es,fr
+common_button_text_confirm,Confirm,Confirmar,Confirmer
+common_button_text_cancel,Cancel,Cancelar,Annuler
+common_button_text_ok,OK,OK,OK
+common_button_text_yes,Yes,Sí,Oui
+common_button_text_no,No,No,Non
+common_button_text_start,Start,Iniciar,Démarrer
+common_button_text_continue,Continue,Continuar,Continuer
+common_button_text_exit,Exit,Salir,Quitter
+common_text_hello,"Hello, {0}!","¡Hola, {0}!","Bonjour, {0}!"
+common_text_welcome,Welcome!,¡Bienvenido!,Bienvenue!
+common_text_loading,Loading...,Cargando...,Chargement...
+common_text_error,Error,Error,Erreur
+common_text_success,Success!,¡Éxito!,Succès!
+common_text_warning,Warning,Advertencia,Avertissement
+common_text_info,Information,Información,Information
+
+
+
+
+
+
+

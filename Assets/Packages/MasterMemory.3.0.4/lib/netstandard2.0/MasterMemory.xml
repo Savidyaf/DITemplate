@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MasterMemory</name>
+    </assembly>
+    <members>
+        <member name="T:MasterMemory.TableInfo">
+            <summary>
+            Diagnostic info of MasterMemory's table.
+            </summary>
+        </member>
+        <member name="M:MasterMemory.Meta.MetaProperty.ToCamelCase(System.String)">
+            <summary>
+            MyProperty -> myProperty
+            </summary>
+        </member>
+        <member name="M:MasterMemory.Meta.MetaProperty.ToSnakeCase(System.String)">
+            <summary>
+            MyProperty -> my_property
+            </summary>
+        </member>
+        <member name="T:MasterMemory._MessagePackResolver">
+            <summary>A MessagePack resolver that uses generated formatters for types in this assembly.</summary>
+        </member>
+        <member name="F:MasterMemory._MessagePackResolver.Instance">
+            <summary>An instance of this resolver that only returns formatters specifically generated for types in this assembly.</summary>
+        </member>
+    </members>
+</doc>
